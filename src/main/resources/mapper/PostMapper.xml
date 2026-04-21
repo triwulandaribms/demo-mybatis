@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.bulletin.board.mapper.PostMapper">
+
+
+
+    <select id="getAll" resultType="Post">
+        SELECT 
+            id,
+            title,
+            author,
+            views,
+            createdAt,
+            ROW_NUMBER() OVER (ORDER BY id DESC) AS numberPost
+        FROM posts
+        WHERE deletedAt IS NULL
+    </select>
+
+    <select id="getById" resultType="Post">
+        SELECT * FROM (
+            SELECT 
+                id,
+                title,
+                author,
+                password,
+                content,
+                views,
+                createdAt,
+                updatedAt,
+                deletedAt,
+                ROW_NUMBER() OVER (ORDER BY id DESC) AS numberPost
+            FROM posts
+            WHERE deletedAt IS NULL
+        ) t
+        WHERE t.id = #{id}
+    </select>
+
+    <insert id="createPost" parameterType="Post" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO posts (title, author, password, content, views, createdAt, deletedAt)
+        VALUES (#{title}, #{author}, #{password}, #{content}, 0, NOW(), NULL)
+    </insert>
+
+    <update id="updatePost">
+        UPDATE posts
+        SET title = #{title},
+            author = #{author},
+            content = #{content},
+            updatedAt = NOW()
+        WHERE id = #{id} AND deletedAt IS NULL
+    </update>
+
+    <update id="deletePost">
+        UPDATE posts
+        SET deletedAt = NOW()
+        WHERE id = #{id} AND deletedAt IS NULL
+    </update>
+
+    <update id="views">
+        UPDATE posts
+        SET views = views + 1
+        WHERE id = #{id} AND deletedAt IS NULL
+    </update>
+
+</mapper>
