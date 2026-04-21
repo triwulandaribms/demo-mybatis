@@ -33,9 +33,8 @@ public record Response<T>(String code, String message, T data) {
         if (code.equals("0301")) return HttpStatus.BAD_REQUEST;
 
         if (code.endsWith("01")) return HttpStatus.CREATED;
-
+        if (code.endsWith("02")) return HttpStatus.UNAUTHORIZED;
         if (code.endsWith("04")) return HttpStatus.NOT_FOUND;
-
         if (code.endsWith("00")) return HttpStatus.OK;
 
         return HttpStatus.INTERNAL_SERVER_ERROR;

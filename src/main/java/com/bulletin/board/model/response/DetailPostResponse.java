@@ -9,5 +9,6 @@ public record DetailPostResponse(
     String author,
     int views,
     LocalDateTime createdAt,
+    LocalDateTime updatedAt, 
     String content
 ) {}

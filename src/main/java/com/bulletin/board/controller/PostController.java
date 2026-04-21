@@ -1,7 +1,9 @@
 package com.bulletin.board.controller;
 
 import com.bulletin.board.model.Response;
+import com.bulletin.board.model.request.DeletePostRequest;
 import com.bulletin.board.model.request.PostRequest;
+import com.bulletin.board.model.request.UpdatePostRequest;
 import com.bulletin.board.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -35,19 +37,18 @@ public class PostController {
     @PutMapping("/update/{id}")
     public ResponseEntity<Response<Object>> update(
             @PathVariable Long id,
-            @RequestParam String password,
-            @RequestBody PostRequest request) {
+            @RequestBody UpdatePostRequest request) {
 
-        Response<Object> res = postService.update(id, password, request);
+        Response<Object> res = postService.update(id, request);
         return ResponseEntity.status(res.getHttpStatus()).body(res);
     }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Response<Object>> delete(
             @PathVariable Long id,
-            @RequestParam String password) {
+            @RequestBody DeletePostRequest request) {
 
-        Response<Object> res = postService.delete(id, password);
+        Response<Object> res = postService.delete(id, request.password());
         return ResponseEntity.status(res.getHttpStatus()).body(res);
     }
 }

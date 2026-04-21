@@ -14,7 +14,7 @@
             author,
             views,
             createdAt,
-            ROW_NUMBER() OVER (ORDER BY id DESC) AS numberPost
+            ROW_NUMBER() OVER (ORDER BY createdAt ASC) AS numberPost
         FROM posts
         WHERE deletedAt IS NULL
     </select>
@@ -31,7 +31,7 @@
                 createdAt,
                 updatedAt,
                 deletedAt,
-                ROW_NUMBER() OVER (ORDER BY id DESC) AS numberPost
+                ROW_NUMBER() OVER (ORDER BY createdAt ASC) AS numberPost
             FROM posts
             WHERE deletedAt IS NULL
         ) t
