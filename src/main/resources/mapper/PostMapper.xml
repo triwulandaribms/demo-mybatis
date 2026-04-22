@@ -14,7 +14,8 @@
             title,
             author,
             views,
-            createdAt
+            createdAt,
+            updatedAt
         FROM posts
         WHERE deletedAt IS NULL
         ORDER BY number_post ASC

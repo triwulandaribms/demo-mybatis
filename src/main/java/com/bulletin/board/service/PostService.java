@@ -91,7 +91,8 @@ public class PostService {
                         data.getTitle(),
                         data.getAuthor(),
                         data.getViews(),
-                        data.getCreatedAt()));
+                        data.getCreatedAt(),
+                        data.getUpdatedAt()));
             }
 
             return Response.create("07", "00", "Sukses", dataAll);
