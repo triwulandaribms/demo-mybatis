@@ -10,37 +10,46 @@
     <select id="getAll" resultType="Post">
         SELECT 
             id,
+            number_post AS numberPost,
             title,
             author,
             views,
-            createdAt,
-            ROW_NUMBER() OVER (ORDER BY createdAt ASC) AS numberPost
+            createdAt
         FROM posts
         WHERE deletedAt IS NULL
+        ORDER BY number_post ASC
     </select>
 
     <select id="getById" resultType="Post">
-        SELECT * FROM (
-            SELECT 
-                id,
-                title,
-                author,
-                password,
-                content,
-                views,
-                createdAt,
-                updatedAt,
-                deletedAt,
-                ROW_NUMBER() OVER (ORDER BY createdAt ASC) AS numberPost
-            FROM posts
-            WHERE deletedAt IS NULL
-        ) t
-        WHERE t.id = #{id}
+        SELECT 
+            id,
+            number_post AS numberPost,
+            title,
+            author,
+            password,
+            content,
+            views,
+            createdAt,
+            updatedAt
+        FROM posts
+        WHERE id = #{id}
+        AND deletedAt IS NULL
     </select>
 
     <insert id="createPost" parameterType="Post" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO posts (title, author, password, content, views, createdAt, deletedAt)
-        VALUES (#{title}, #{author}, #{password}, #{content}, 0, NOW(), NULL)
+        INSERT INTO posts (
+            number_post, title, author, password, content, views, createdAt, deletedAt
+        )
+        VALUES (
+            nextval('post_number_seq'),
+            #{title},
+            #{author},
+            #{password},
+            #{content},
+            0,
+            NOW(),
+            NULL
+        )
     </insert>
 
     <update id="updatePost">

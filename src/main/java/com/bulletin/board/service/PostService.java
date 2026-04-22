@@ -8,6 +8,7 @@ import com.bulletin.board.model.request.UpdatePostRequest;
 import com.bulletin.board.model.response.CreatePostResponse;
 import com.bulletin.board.model.response.DetailPostResponse;
 import com.bulletin.board.model.response.ListPostResponse;
+// import com.bulletin.board.model.response.UpdateDeleteResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,74 +24,53 @@ public class PostService {
     private final PostMapper postMapper;
     private final PasswordEncoder passwordEncoder;
 
-    private String cekValidasiCreate(PostRequest request) {
-
-        if (request.title() == null || request.title().isBlank()) {
-            return "Title tidak boleh kosong";
-        }
-
-        if (request.author() == null || request.author().isBlank()) {
-            return "Author tidak boleh kosong";
-        }
-
-        if (request.password() == null || request.password().isBlank()) {
-            return "Password tidak boleh kosong";
-        }
-
-        if (request.content() == null || request.content().isBlank()) {
-            return "Content tidak boleh kosong";
-        }
-
-        if (cekKarakterKorea(request.title())) {
-            if (request.title().length() > 50) {
-                return "Title maksimal 50 karakter untuk bahasa Korea";
-            }
-        } else {
-            if (request.title().length() > 100) {
-                return "Title maksimal 100 karakter";
-            }
-        }
-
-        if (request.author().length() > 10) {
-            return "Author maksimal 10 karakter";
-        }
-
-        return null;
-    }
-
-    private String cekValidasiUpdate(PostRequest request) {
-
-        if (request.title() == null || request.title().isBlank()) {
-            return "Title tidak boleh kosong";
-        }
-
-        if (request.author() == null || request.author().isBlank()) {
-            return "Author tidak boleh kosong";
-        }
-
-        if (request.content() == null || request.content().isBlank()) {
-            return "Content tidak boleh kosong";
-        }
-
-        if (cekKarakterKorea(request.title())) {
-            if (request.title().length() > 50) {
-                return "Title maksimal 50 karakter untuk bahasa Korea";
-            }
-        } else {
-            if (request.title().length() > 100) {
-                return "Title maksimal 100 karakter";
-            }
-        }
-
-        if (request.author().length() > 10) {
-            return "Author maksimal 10 karakter";
-        }
-
-        return null;
-    }
 
     private boolean cekKarakterKorea(String text) {
         return text != null && text.matches(".*[가-힣].*");
+    }
+
+    private String validasiPost(
+            String title,
+            String author,
+            String password,
+            String content,
+            boolean isUpdate) {
+
+        if (title == null || title.isBlank()) {
+            return "Title tidak boleh kosong";
+        }
+
+        if (author == null || author.isBlank()) {
+            return "Author tidak boleh kosong";
+        }
+
+        if (content == null || content.isBlank()) {
+            return "Content tidak boleh kosong";
+        }
+
+        if (!isUpdate && (password == null || password.isBlank())) {
+            return "Password tidak boleh kosong";
+        }
+
+        if (!isUpdate && (password == null || password.length() < 6)){
+            return "Password minimal 6 karakter";
+        }
+
+        if (cekKarakterKorea(title)) {
+            if (title.length() > 50) {
+                return "Title maksimal 50 karakter untuk bahasa Korea";
+            }
+        } else {
+            if (title.length() > 100) {
+                return "Title maksimal 100 karakter untuk bahasa Inggris";
+            }
+        }
+
+        if (author.length() > 10) {
+            return "Author maksimal 10 karakter";
+        }
+
+        return null;
     }
 
     public Response<Object> getAllPosts() {
@@ -127,16 +107,15 @@ public class PostService {
 
             Post data = postMapper.getById(id);
 
-
             if (data == null) {
                 return Response.create("07", "04", "Post tidak ditemukan", null);
             }
 
             postMapper.views(id);
 
-            data = postMapper.getById(id);
+            data.setViews(data.getViews() + 1);
 
-            DetailPostResponse dataAll = new DetailPostResponse(
+            DetailPostResponse response = new DetailPostResponse(
                     data.getNumberPost(),
                     data.getTitle(),
                     data.getAuthor(),
@@ -145,7 +124,7 @@ public class PostService {
                     data.getUpdatedAt(),
                     data.getContent());
 
-            return Response.create("07", "00", "Sukses", dataAll);
+            return Response.create("07", "00", "Sukses", response);
 
         } catch (Exception e) {
             return Response.create("07", "99", "Internal server error", null);
@@ -156,7 +135,12 @@ public class PostService {
 
         try {
 
-            String validasi = cekValidasiCreate(request);
+            String validasi = validasiPost(
+                    request.title(),
+                    request.author(),
+                    request.password(),
+                    request.content(),
+                    false);
 
             if (validasi != null) {
                 return Response.badRequest(validasi);
@@ -196,25 +180,36 @@ public class PostService {
 
             if (request.password() == null ||
                     !passwordEncoder.matches(request.password(), cekData.getPassword())) {
-                return Response.create("07", "02", "Password salah", null);
+                return Response.create("07", "02", "Password tidak sesuai", null);
             }
 
-            String validasi = cekValidasiUpdate(
-                    new PostRequest(request.title(), request.author(), null, request.content()));
+            String validasi = validasiPost(
+                    request.title(),
+                    request.author(),
+                    request.password(),
+                    request.content(),
+                    true);
 
             if (validasi != null) {
                 return Response.badRequest(validasi);
             }
 
             Post post = new Post();
+
+
             post.setId(id);
             post.setTitle(request.title());
             post.setAuthor(request.author());
             post.setContent(request.content());
-
+            
             postMapper.updatePost(post);
 
-            return Response.create("07", "00", "Post berhasil diupdate", null);
+            return Response.create(
+                    "07",
+                    "00",
+                    "Post dengan id " + id + " berhasil diupdate",
+                    null
+            );
 
         } catch (Exception e) {
             return Response.create("07", "99", "Internal server error", null);
@@ -238,10 +233,16 @@ public class PostService {
 
             postMapper.deletePost(id);
 
-            return Response.create("07", "00", "Post berhasil dihapus", null);
-
+            return Response.create(
+                    "07",
+                    "00",
+                    "Post dengan id " + id + " berhasil dihapus",
+                    null
+            );
         } catch (Exception e) {
             return Response.create("07", "99", "Internal server error", null);
         }
     }
+
+
 }
