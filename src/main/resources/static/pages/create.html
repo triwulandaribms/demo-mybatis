@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Create Post</title>
+    <title>Buat Post</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
@@ -17,7 +17,7 @@
 
     <div class="form-card">
 
-        <h2 class="mb-4 text-center">Create Post</h2>
+        <h2 class="mb-4 text-center">Buat Post</h2>
 
         <div class="card shadow-sm">
             <div class="card-body">
@@ -43,8 +43,8 @@
                 </div>
 
                 <div class="d-flex justify-content-between">
-                    <a href="list.html" class="btn btn-secondary">Back</a>
-                    <button onclick="createPost()" class="btn btn-success">Submit</button>
+                    <a href="list.html" class="btn btn-secondary">Kembali</a>
+                    <button id="btnCreate" onclick="createPost()" class="btn btn-success">Kirim</button>
                 </div>
 
             </div>
@@ -67,20 +67,7 @@
                 return;
             }
 
-            if (author.length > 10) {
-                alert("Author max 10 karakter");
-                return;
-            }
-
-            if (title.length > 100) {
-                alert("Title max 100 karakter");
-                return;
-            }
-
-            if (!/^[a-zA-Z0-9 ]+$/.test(author)) {
-                alert("Author hanya boleh huruf & angka");
-                return;
-            }
+            $("#btnCreate").prop("disabled", true).text("Creating...");
 
             $.ajax({
                 url: "http://localhost:8080/api/post/add",
@@ -97,15 +84,28 @@
 
                     if (res.code !== "0001") {
                         alert(res.message);
+                        $("#btnCreate").prop("disabled", false).text("Kirim");
                         return;
                     }
 
-                    alert("Post berhasil dibuat!");
-                    window.location.href = "list.html";
+                    alert(res.message);
+
+                    setTimeout(() => {
+                        window.location.href = "list.html";
+                    }, 300);
                 },
 
-                error: function () {
-                    alert("Terjadi error di server");
+                error: function (xhr) {
+
+                    let res = xhr.responseJSON;
+
+                    if (res && res.message) {
+                        alert(res.message);
+                    } else {
+                        alert("Terjadi error di server");
+                    }
+
+                    $("#btnCreate").prop("disabled", false).text("Kirim");
                 }
             });
         }

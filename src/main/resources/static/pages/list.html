@@ -3,7 +3,10 @@
 
 <head>
     <title>Bulletin Board</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 
     <style>
         .post-card {
@@ -13,16 +16,47 @@
 
         .post-card:hover {
             transform: scale(1.01);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
     </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 
 <body class="container mt-4">
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>Bulletin Board</h2>
-        <a href="create.html" class="btn btn-primary">Create Post</a>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold">Bulletin Implementation</h3>
+
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
+            <i class="bi bi-plus-circle"></i> Buat Post
+        </button>
+    </div>
+
+    <div class="modal fade" id="createModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Buat Post</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <input id="author" class="form-control mb-2" placeholder="Author">
+                    <input id="password" type="password" class="form-control mb-2" placeholder="Password">
+                    <input id="title" class="form-control mb-2" placeholder="Title">
+                    <textarea id="content" class="form-control mb-2"></textarea>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-success" onclick="createPost()">
+                        <i class="bi bi-send"></i> Kirim
+                    </button>
+                </div>
+
+            </div>
+        </div>
     </div>
 
     <div id="postList"></div>
@@ -30,44 +64,101 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
-        $.get("http://localhost:8080/api/post/get-all", function (res) {
+        function loadPosts() {
+            $.get("http://localhost:8080/api/post/get-all", function (res) {
 
-            if (!res.data || res.data.length === 0) {
-                $("#postList").html("<p class='text-center'>No Data</p>");
-                return;
-            }
+                if (!res.data || res.data.length === 0) {
+                    $("#postList").html("<p class='text-center'>No Data</p>");
+                    return;
+                }
 
-            let html = "";
+                let html = "";
 
-            res.data.forEach(p => {
-                html += `
-                    <div class="card mb-3 post-card" onclick="goDetail(${p.id})">
-                        <div class="card-body">
+                res.data.forEach(p => {
+                    html += `
+                        <div class="card mb-3 post-card" onclick="goDetail(${p.id})">
+                            <div class="card-body">
 
-                            <div class="d-flex justify-content-between">
-                                <h5 class="card-title mb-1">${p.numberPost}. ${p.title}</h5>
-                                <span class="badge bg-secondary">${p.views}</span>
+                                <div class="d-flex justify-content-between">
+                                    <h5 class="card-title mb-1">
+                                        ${p.numberPost}. ${p.title}
+                                    </h5>
+
+                                    <span class="badge bg-light text-dark">
+                                        <i class="bi bi-eye"></i> ${p.views}
+                                    </span>
+                                </div>
+
+                                <div class="text-muted small mb-2">
+                                    ${p.author}
+                                </div>
+
+                                <small class="text-muted">
+                                    ${new Date(p.createdAt).toLocaleString()}
+                                </small>
+
                             </div>
-
-                            <div class="text-muted small mb-2">
-                                ${p.author}
-                            </div>
-
-                            <small class="text-muted">
-                                ${new Date(p.createdAt).toLocaleString()}
-                            </small>
-
                         </div>
-                    </div>
-                `;
-            });
+                    `;
+                });
 
-            $("#postList").html(html);
-        });
+                $("#postList").html(html);
+            });
+        }
 
         function goDetail(id) {
             window.location.href = `detail.html?id=${id}`;
         }
+
+        function createPost() {
+
+            const author = $("#author").val().trim();
+            const password = $("#password").val().trim();
+            const title = $("#title").val().trim();
+            const content = $("#content").val().trim();
+
+            $.ajax({
+                url: "http://localhost:8080/api/post/add",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({
+                    author,
+                    password,
+                    title,
+                    content
+                }),
+
+                success: function (res) {
+
+                    if (res.code !== "0001") {
+                        alert(res.message);
+                        return;
+                    }
+
+                    alert(res.message);
+
+                    let modal = bootstrap.Modal.getInstance(document.getElementById('createModal'));
+                    modal.hide();
+
+                    loadPosts();
+                },
+
+                error: function (xhr) {
+
+                    let message = "Terjadi error di server";
+
+                    if (xhr.responseJSON?.message) {
+                        message = xhr.responseJSON.message;
+                    } else if (xhr.responseText) {
+                        try {
+                            message = JSON.parse(xhr.responseText).message;
+                        } catch (e) { }
+                    }
+
+                    alert(message);
+                }
+            });
+        } loadPosts();
     </script>
 
 </body>

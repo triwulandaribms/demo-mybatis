@@ -32,7 +32,7 @@
                 </div>
 
                 <div class="text-muted mb-2">
-                     <span id="author"></span>
+                    <span id="author"></span>
                 </div>
 
                 <hr>
@@ -42,20 +42,20 @@
                 <hr>
 
                 <small class="text-muted">
-                    No: <span id="numberPost"></span><br>
-                    Created: <span id="createdAt"></span><br>
-                    Updated: <span id="updatedAt"></span>
+                    Nomor post: <span id="numberPost"></span><br>
+                    tanggal dibuat: <span id="createdAt"></span><br>
+                    tanggal diupdate: <span id="updatedAt"></span>
                 </small>
 
             </div>
         </div>
 
         <div class="d-flex justify-content-between">
-            <a href="list.html" class="btn btn-secondary">Back</a>
+            <a href="list.html" class="btn btn-secondary">Kembali</a>
 
             <div>
                 <button onclick="goUpdate()" class="btn btn-warning">Edit</button>
-                <button onclick="deletePost()" class="btn btn-danger">Delete</button>
+                <button onclick="deletePost()" class="btn btn-danger">Hapus</button>
             </div>
         </div>
 
@@ -93,10 +93,10 @@
             });
         }
 
+
         function deletePost() {
 
             let password = prompt("Input password:");
-
             if (!password) return;
 
             $.ajax({
@@ -113,11 +113,21 @@
                     }
 
                     alert(res.message);
-                    window.location.href = "list.html";
+
+                    setTimeout(() => {
+                        window.location.href = "list.html";
+                    }, 300);
                 },
 
-                error: function () {
-                    alert("Terjadi error di server");
+                error: function (xhr) {
+
+                    let res = xhr.responseJSON;
+
+                    if (res && res.message) {
+                        alert(res.message);
+                    } else {
+                        alert("Terjadi error di server");
+                    }
                 }
             });
         }
