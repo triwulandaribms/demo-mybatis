@@ -28,6 +28,12 @@ public class PostController {
         return ResponseEntity.status(res.getHttpStatus()).body(res);
     }
 
+    @GetMapping("/get-by-no-view/{id}")
+    public ResponseEntity<Response<Object>> detailNoView(@PathVariable Long id) {
+        Response<Object> res = postService.getDetailNoView(id);
+        return ResponseEntity.status(res.getHttpStatus()).body(res);
+}
+
     @PostMapping("/add")
     public ResponseEntity<Response<Object>> create(@RequestBody PostRequest request) {
         Response<Object> res = postService.create(request);

@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record ListPostResponse(
+    Long id,
     Integer numberPost,
     String title,
     String author,

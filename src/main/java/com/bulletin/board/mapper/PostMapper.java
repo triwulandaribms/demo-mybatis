@@ -11,6 +11,8 @@ public interface PostMapper {
 
     Post getById(Long id);
 
+    Post getByIdNoView(Long id);
+
     void createPost(Post post);
 
     void updatePost(Post post);

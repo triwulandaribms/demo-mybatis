@@ -62,6 +62,22 @@
         WHERE id = #{id} AND deletedAt IS NULL
     </update>
 
+    <select id="getByIdNoView" resultType="Post">
+    SELECT 
+        id,
+        number_post AS numberPost,
+        title,
+        author,
+        password,
+        content,
+        views,
+        createdAt,
+        updatedAt
+    FROM posts
+    WHERE id = #{id}
+    AND deletedAt IS NULL
+    </select>
+
     <update id="deletePost">
         UPDATE posts
         SET deletedAt = NOW()

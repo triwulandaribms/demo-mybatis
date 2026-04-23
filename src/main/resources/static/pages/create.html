@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Create Post</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        .form-card {
+            max-width: 600px;
+            margin: auto;
+        }
+    </style>
+</head>
+
+<body class="container mt-5">
+
+    <div class="form-card">
+
+        <h2 class="mb-4 text-center">Create Post</h2>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+
+                <div class="mb-3">
+                    <label class="form-label">Author</label>
+                    <input id="author" class="form-control" placeholder="Masukkan nama (max 10)">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input id="password" type="password" class="form-control" placeholder="Minimal 6 karakter">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Title</label>
+                    <input id="title" class="form-control" placeholder="Judul post">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Content</label>
+                    <textarea id="content" rows="5" class="form-control" placeholder="Tulis isi post..."></textarea>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="list.html" class="btn btn-secondary">Back</a>
+                    <button onclick="createPost()" class="btn btn-success">Submit</button>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        function createPost() {
+
+            const author = $("#author").val().trim();
+            const password = $("#password").val().trim();
+            const title = $("#title").val().trim();
+            const content = $("#content").val().trim();
+
+            if (!author || !title || !password || !content) {
+                alert("Semua field wajib diisi");
+                return;
+            }
+
+            if (author.length > 10) {
+                alert("Author max 10 karakter");
+                return;
+            }
+
+            if (title.length > 100) {
+                alert("Title max 100 karakter");
+                return;
+            }
+
+            if (!/^[a-zA-Z0-9 ]+$/.test(author)) {
+                alert("Author hanya boleh huruf & angka");
+                return;
+            }
+
+            $.ajax({
+                url: "http://localhost:8080/api/post/add",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({
+                    author,
+                    password,
+                    title,
+                    content
+                }),
+
+                success: function (res) {
+
+                    if (res.code !== "0001") {
+                        alert(res.message);
+                        return;
+                    }
+
+                    alert("Post berhasil dibuat!");
+                    window.location.href = "list.html";
+                },
+
+                error: function () {
+                    alert("Terjadi error di server");
+                }
+            });
+        }
+    </script>
+
+</body>
+
+</html>
